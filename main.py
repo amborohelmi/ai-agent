@@ -1,29 +1,42 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 import requests
 import os
 
 app = FastAPI()
 
-API_URL = "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-Coder-7B"
-
 HF_TOKEN = os.getenv("HF_TOKEN")
+
+API_URL = "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-Coder-7B"
 
 headers = {
     "Authorization": f"Bearer {HF_TOKEN}"
 }
 
-def query(prompt):
-    response = requests.post(API_URL, headers=headers, json={
-        "inputs": prompt
-    })
+class RequestBody(BaseModel):
+    prompt: str
+
+SYSTEM_PROMPT = """
+You are an expert software engineer AI agent.
+Give clean, structured, production-ready code.
+"""
+
+def call_qwen(prompt):
+    payload = SYSTEM_PROMPT + "\n\nTASK:\n" + prompt
+
+    response = requests.post(
+        API_URL,
+        headers=headers,
+        json={"inputs": payload}
+    )
+
     return response.json()
 
 @app.get("/")
 def home():
-    return {"status": "AI Agent Running 🚀"}
+    return {"status": "AI Agent Running"}
 
 @app.post("/agent")
-def agent(data: dict):
-    prompt = data.get("prompt")
-    result = query(prompt)
+def agent(body: RequestBody):
+    result = call_qwen(body.prompt)
     return {"result": result}
