@@ -22,13 +22,29 @@ Give clean, structured, production-ready code.
 """
 
 def call_qwen(prompt):
-    payload = SYSTEM_PROMPT + "\n\nTASK:\n" + prompt
-
     response = requests.post(
         API_URL,
         headers=headers,
-        json={"inputs": payload}
+        json={"inputs": prompt},
+        timeout=60
     )
+
+    # 🔥 INI YANG KAMU MAKSUD (RAW DEBUG)
+    print("STATUS:", response.status_code)
+    print("TEXT:", response.text)
+
+    try:
+        data = response.json()
+    except Exception:
+        return {
+            "error": "Non-JSON response from Hugging Face",
+            "raw": response.text
+        }
+
+    if isinstance(data, dict) and "error" in data:
+        return data
+
+    return data[0]["generated_text"]
 
     return response.json()
 
