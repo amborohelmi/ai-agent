@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Coding Agent</title>
+</head>
+<body>
+
+<h2>AI Agent</h2>
+
+<textarea id="input" rows="6" cols="50"></textarea><br><br>
+
+<button onclick="send()">Run AI</button>
+
+<pre id="output"></pre>
+
+<script>
+async function send() {
+  const prompt = document.getElementById("input").value;
+
+  const res = await fetch("https://web-production-7464f.up.railway.app/agent", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ prompt })
+  });
+
+  const data = await res.json();
+
+  document.getElementById("output").innerText =
+    JSON.stringify(data.result, null, 2);
+}
+</script>
+
+</body>
+</html>
